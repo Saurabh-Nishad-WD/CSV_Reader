@@ -88,7 +88,7 @@ function CSVViewer() {
             </thead>
             <tbody>
               {data.map((row, rowIndex) => (
-                <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-gray-700" : "bg-gray-600"}>
+                <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-[#0d0d0d]" : "bg-[#1a1a1a]"}>
                   {headers.map((header, colIndex) => (
                     <td key={colIndex} className="border border-gray-600 px-4 py-2">
                       {row[header]}
