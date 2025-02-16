@@ -3,6 +3,7 @@ import { createContext, useContext } from "react";
 import { getFirestore } from "firebase/firestore";
 import { getDatabase, set, ref } from "firebase/database";
 
+// Firebase Config
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
@@ -13,19 +14,26 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_APP_ID,
 };
 
-// Initialize Firebase
+// ✅ Initialize Firebase (No async needed)
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app); // Real-time Database
+const db = getDatabase(app); // Realtime Database
 const firestore = getFirestore(app); // Firestore Database
 
-// Create Firebase Context
+// ✅ Create Firebase Context
 const FirebaseContext = createContext(null);
 export const useFirebase = () => useContext(FirebaseContext);
 
 export const FirebaseProvider = ({ children }) => {
   
-  // Function to store data in Firebase Realtime Database
-  const putData = (key, data) => set(ref(db, key), data);
+  // ✅ Asynchronous function to store data in Firebase Realtime Database
+  const putData = async (key, data) => {
+    try {
+      await set(ref(db, key), data);
+      console.log("Data successfully saved!");
+    } catch (error) {
+      console.error("Error saving data:", error);
+    }
+  };
 
   return (
     <FirebaseContext.Provider value={{ putData }}>
