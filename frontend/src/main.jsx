@@ -6,11 +6,11 @@ import { FirebaseProvider } from './config/firebaseConfig.jsx';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(
-  // <StrictMode>
+  <StrictMode>
     <HashRouter>
       <FirebaseProvider>
         <App />
       </FirebaseProvider>
     </HashRouter>
-  // </StrictMode>
+  </StrictMode>
 );
