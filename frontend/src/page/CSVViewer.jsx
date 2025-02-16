@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom"; 
-import Home from "./Home"; 
 
 function CSVViewer() {
   const { id } = useParams();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [headers, setHeaders] = useState([]);
   const [sortColumn, setSortColumn] = useState(null);
@@ -18,10 +17,22 @@ function CSVViewer() {
 
   useEffect(() => {
     const storedData = localStorage.getItem(`csvData-${id}`);
+
     if (storedData) {
-      const parsedData = JSON.parse(storedData);
-      setData(parsedData);
-      setHeaders(Object.keys(parsedData[0] || {}));
+      try {
+        const parsedData = JSON.parse(storedData);
+        if (Array.isArray(parsedData) && parsedData.length > 0) {
+          setData(parsedData);
+          setHeaders(Object.keys(parsedData[0]));
+        } else {
+          setData([]); // Ensure empty array instead of undefined/null
+        }
+      } catch (error) {
+        console.error("Error parsing CSV data:", error);
+        setData([]);
+      }
+    } else {
+      setData([]); // No data found in localStorage
     }
   }, [id]);
 
@@ -31,11 +42,11 @@ function CSVViewer() {
     setSortColumn(column);
     setSortOrder(newOrder);
 
-    const isSizeColumn = data.every(row => sizeOrder.includes(row[column]));
+    const isSizeColumn = data.every(row => row[column] && sizeOrder.includes(row[column]));
 
     const sortedData = [...data].sort((a, b) => {
-      let valA = a[column];
-      let valB = b[column];
+      let valA = a[column] ?? ""; // Handle undefined/null values
+      let valB = b[column] ?? "";
 
       if (isSizeColumn) {
         valA = sizeOrder.indexOf(valA);
@@ -55,7 +66,7 @@ function CSVViewer() {
   };
 
   return (
-    <div className="p-6 bg-[#18181b] min-h-screen text-white md:text-lg ">
+    <div className="p-6 bg-[#18181b] min-h-screen text-white md:text-lg">
       {/* Back to Home Button */}
       <button
         onClick={() => navigate("/")}
@@ -67,7 +78,7 @@ function CSVViewer() {
       {data.length === 0 ? (
         <div className="flex flex-col items-center">
           <h1 className="text-2xl font-bold mb-4">CSV Data Viewer</h1>
-          <p>No data available</p>
+          <p className="text-gray-400">No data available. Please upload a CSV file.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -88,10 +99,10 @@ function CSVViewer() {
             </thead>
             <tbody>
               {data.map((row, rowIndex) => (
-                <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-gray-700" : "bg-gray-600"}>
+                <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-[#0d0d0d]" : "bg-[#1a1a1a]"}>
                   {headers.map((header, colIndex) => (
                     <td key={colIndex} className="border border-gray-600 px-4 py-2">
-                      {row[header]}
+                      {row[header] ?? "N/A"} {/* Handle undefined/null values */}
                     </td>
                   ))}
                 </tr>

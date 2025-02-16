@@ -1,36 +1,64 @@
 import { useState, useEffect } from "react";
+import { useFirebase } from "../config/firebaseConfig"; // Import Firebase Context
 import Papa from "papaparse";
 
 function Home() {
   const [fileName, setFileName] = useState("");
+  const { putData } = useFirebase(); // Use Firebase Context
+
+
+
 
   useEffect(() => {
     document.title = fileName ? `Upload - ${fileName}` : "CSV File Uploader";
   }, [fileName]);
 
+
+
+
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const nameWithoutExtension = file.name.replace(/\.[^/.]+$/, ""); 
-    setFileName(nameWithoutExtension); 
+    // Validate file type
+    if (file.type !== "text/csv") {
+      alert("Please upload a valid CSV file.");
+      return;
+    }
+
+    const nameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
+    setFileName(nameWithoutExtension);
 
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
       transformHeader: (header) => header.trim(),
       complete: (results) => {
+        if (results.errors.length > 0) {
+          alert("Error parsing CSV file. Please check the format.");
+          return;
+        }
+
         if (results.data.length === 0) return;
 
-        const csvData = JSON.stringify(results.data);
+        const csvData = results.data;
 
-        localStorage.setItem(`csvData-${nameWithoutExtension}`, csvData);
+        // Save to localStorage (Optional)
+        localStorage.setItem(`csvData-${nameWithoutExtension}`, JSON.stringify(csvData));
 
+        // Upload CSV data to Firebase Realtime Database
+        putData(`csv-files/${nameWithoutExtension}`, csvData);
+
+        // Redirect to a new page
         window.open(`/csv/${nameWithoutExtension}`, "_blank");
       },
     });
   };
 
+
+
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#18181b] text-white">
       <h1 className="text-3xl font-bold mb-6">📂 CSV File Uploader</h1>
